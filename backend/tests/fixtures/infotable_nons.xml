@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<informationTable>
+  <infoTable>
+    <nameOfIssuer>MICROSOFT CORP</nameOfIssuer>
+    <titleOfClass>COM</titleOfClass>
+    <cusip>594918104</cusip>
+    <value>2,400,000</value>
+    <shrsOrPrnAmt><sshPrnamt>5,000,000</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt>
+  </infoTable>
+</informationTable>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<informationTable xmlns="http://www.sec.gov/edgar/document/thirteenf/informationtable">
+  <infoTable>
+    <nameOfIssuer>APPLE INC</nameOfIssuer>
+    <titleOfClass>COM</titleOfClass>
+    <cusip>037833100</cusip>
+    <value>1500000</value>
+    <shrsOrPrnAmt><sshPrnamt>8000000</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt>
+    <investmentDiscretion>SOLE</investmentDiscretion>
+    <votingAuthority><Sole>8000000</Sole><Shared>0</Shared><None>0</None></votingAuthority>
+  </infoTable>
+  <infoTable>
+    <nameOfIssuer>APPLE INC</nameOfIssuer>
+    <titleOfClass>COM</titleOfClass>
+    <cusip>037833100</cusip>
+    <value>500000</value>
+    <shrsOrPrnAmt><sshPrnamt>2000000</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt>
+    <investmentDiscretion>DFND</investmentDiscretion>
+  </infoTable>
+  <infoTable>
+    <nameOfIssuer>SPDR S&amp;P 500 ETF TR</nameOfIssuer>
+    <titleOfClass>TRUST UNIT</titleOfClass>
+    <cusip>78462F103</cusip>
+    <value>250000</value>
+    <shrsOrPrnAmt><sshPrnamt>400000</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt>
+    <putCall>Put</putCall>
+    <investmentDiscretion>SOLE</investmentDiscretion>
+  </infoTable>
+  <infoTable>
+    <nameOfIssuer>SOME CORP NOTE</nameOfIssuer>
+    <titleOfClass>NOTE 4.5</titleOfClass>
+    <cusip>111111111</cusip>
+    <value>90000</value>
+    <shrsOrPrnAmt><sshPrnamt>90000</sshPrnamt><sshPrnamtType>PRN</sshPrnamtType></shrsOrPrnAmt>
+  </infoTable>
+</informationTable>
