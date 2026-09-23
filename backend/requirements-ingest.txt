@@ -1,0 +1,4 @@
+# Minimal set to run find_funds.py and the SEC ingestion. Installs in seconds.
+httpx>=0.28
+python-dotenv>=1.0
+pytest>=8.3
