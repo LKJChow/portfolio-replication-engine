@@ -37,6 +37,8 @@ SUBMISSIONS = "https://data.sec.gov/submissions/CIK{cik:010d}.json"
 ARCHIVE = "https://www.sec.gov/Archives/edgar/data/{cik}/{acc_nodash}/{doc}"
 INDEX = "https://www.sec.gov/Archives/edgar/data/{cik}/{acc_nodash}/index.json"
 COMPANY_TICKERS = "https://www.sec.gov/files/company_tickers.json"
+BROWSE = ("https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany"
+          "&company={name}&type=13F-HR&dateb=&owner=include&count=40&output=atom")
 MIN_INTERVAL = 0.12          # ~8 req/s, under the SEC's stated 10/s ceiling
 
 
@@ -83,6 +85,7 @@ class SecClient:
                      "Accept-Encoding": "gzip, deflate"},
             timeout=timeout, follow_redirects=True)
         self._last = 0.0
+        self._subs: dict[int, dict] = {}
 
     def _throttle(self) -> None:
         wait = MIN_INTERVAL - (time.monotonic() - self._last)
@@ -104,17 +107,62 @@ class SecClient:
 
     # --- discovery ----------------------------------------------------------
     def resolve_cik(self, name_fragment: str) -> list[tuple[int, str]]:
-        """Look a manager up by name. CIKs are hardcoded at your peril —
-        a transposed digit silently fetches a different company's filings."""
+        """Look a manager up in the ticker index.
+
+        LIMITED ON PURPOSE: company_tickers.json only lists issuers that have a
+        stock ticker. Most 13F filers are private partnerships and do not appear
+        here at all, and a loose fragment can match an unrelated public company
+        with a similar name — "bridgewater" returns Bridgewater Bancshares, a
+        Minnesota bank, not Bridgewater Associates. Use resolve_13f_filer for
+        managers; this stays for issuer lookups.
+        """
         data = self.get(COMPANY_TICKERS).json()
         frag = name_fragment.lower()
         hits = {(int(v["cik_str"]), v["title"])
                 for v in data.values() if frag in v["title"].lower()}
         return sorted(hits)
 
+    def resolve_13f_filer(self, name: str) -> list[int]:
+        """CIKs of entities matching a name among 13F-HR filers.
+
+        Returns CIKs only. The company-search feed's name field is unreliable —
+        on multi-match responses EDGAR emits "ARRAY(0x...)", a leaked Perl
+        reference, instead of the company name. Names come from
+        entity_name() instead, and every candidate is returned rather than
+        guessed between: managers file under near-identical names (feeder
+        funds, successor entities), and picking one silently is how the wrong
+        portfolio ends up in the database.
+        """
+        from urllib.parse import quote_plus
+        xml = self.get(BROWSE.format(name=quote_plus(name))).text
+        root = ET.fromstring(xml)
+        out: list[int] = []
+        for node in root.iter():
+            if _strip_ns(node.tag) == "cik" and node.text:
+                cik = int(node.text.strip())
+                if cik not in out:
+                    out.append(cik)
+        return out
+
+    def submissions(self, cik: int) -> dict:
+        """Submission history for a CIK, cached for the life of the client."""
+        if cik not in self._subs:
+            self._subs[cik] = self.get(SUBMISSIONS.format(cik=cik)).json()
+        return self._subs[cik]
+
+    def entity_name(self, cik: int) -> str:
+        """Authoritative registrant name.
+
+        Taken from the submissions API rather than the company-search feed:
+        when that feed returns multiple matches it emits a raw Perl array
+        reference ("ARRAY(0x...)") in place of the name and omits
+        conformed-name altogether. This endpoint is correct in every case.
+        """
+        return self.submissions(cik).get("name", "")
+
     def filings_13f(self, cik: int) -> list[dict]:
         """Every 13F-HR (and amendment) in the submission history."""
-        data = self.get(SUBMISSIONS.format(cik=cik)).json()
+        data = self.submissions(cik)
         recent = data.get("filings", {}).get("recent", {})
         out = list(_zip_filings(recent))
         # Older filings spill into separate files once the history is long.

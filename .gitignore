@@ -12,3 +12,4 @@ build/
 data/cache/
 *.db
 postgres-data/
+funds.json
