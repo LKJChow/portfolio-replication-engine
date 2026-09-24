@@ -28,12 +28,24 @@ MANAGERS = [
 
 
 def agent() -> str:
+    """Read SEC_USER_AGENT from .env.
+
+    No baked-in default: a personal address hardcoded here would be published
+    with the repository, and a generic one would get the SEC's requests
+    rejected. Failing loudly is the correct behaviour.
+    """
     env = Path(__file__).resolve().parents[1] / ".env"
     if env.exists():
         for line in env.read_text().splitlines():
             if line.startswith("SEC_USER_AGENT"):
-                return line.split("=", 1)[1].strip().strip('"').strip("'")
-    return "LC Research polochow5@icloud.com"
+                value = line.split("=", 1)[1].strip().strip('"').strip("'")
+                if "@" in value:
+                    return value
+    raise SystemExit(
+        "Set SEC_USER_AGENT in .env before running.\n"
+        '  cp .env.example .env    then edit it to "Your Name your@email.com"\n'
+        "The SEC refuses requests without a User-Agent containing contact info."
+    )
 
 
 def main() -> None:
